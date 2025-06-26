@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { ChevronDownIcon } from 'lucide-react';
 import { useTicketHistory } from '@/hooks/useTicketHistory';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { useCurrentJackpot } from '@/hooks/useCurrentJackpot';
 import jackpotAbi from '@/lib/abi/jackpotAbi';
 import { config } from '@/lib/config';
 import { parseUnits } from 'viem';
@@ -25,6 +26,7 @@ export default function Home() {
   const [purchaseStep, setPurchaseStep] = useState<'idle' | 'approving' | 'purchasing'>('idle');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [referralAddress, setReferralAddress] = useState<string>('0x0000000000000000000000000000000000000000');
+  const [liveTimeLeft, setLiveTimeLeft] = useState(0);
 
   const { data: usdcBalance } = useBalance({
     address,
@@ -33,6 +35,7 @@ export default function Home() {
 
   const { history: ticketHistory, isLoading: historyLoading } = useTicketHistory(address);
   const { profile: userProfile, isLoading: profileLoading } = useUserProfile(address);
+  const { formattedJackpot, isLoading: jackpotLoading, timeLeft } = useCurrentJackpot();
 
   // Smart contract interaction
   const { writeContract, data: hash, isPending: isPurchasing } = useWriteContract();
@@ -73,6 +76,18 @@ export default function Home() {
       setReferralAddress(refParam);
     }
   }, []);
+
+  // Live countdown timer
+  useEffect(() => {
+    setLiveTimeLeft(timeLeft); // Reset when timeLeft from hook changes
+    if (timeLeft <= 0) return;
+    
+    const interval = setInterval(() => {
+      setLiveTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, [timeLeft]);
 
   // Auto-progress to purchase step when approval is successful
   useEffect(() => {
@@ -267,10 +282,13 @@ export default function Home() {
                 Today&apos;s Jackpot
               </p>
               <div className="text-5xl md:text-6xl font-black text-white mb-3 leading-none">
-                $1,036,062
+                {jackpotLoading ? '$0' : `$${Math.floor(parseFloat(formattedJackpot)).toLocaleString()}`}
               </div>
               <p className="text-sm" style={{ color: '#a1a1aa' }}>
-                Drawing tomorrow at 11:01 AM
+                {liveTimeLeft > 0 
+                  ? `Drawing in ${Math.floor(liveTimeLeft / 3600)}h ${Math.floor((liveTimeLeft % 3600) / 60)}m ${liveTimeLeft % 60}s`
+                  : 'Drawing starting soon'
+                }
               </p>
             </div>
           </Card>
