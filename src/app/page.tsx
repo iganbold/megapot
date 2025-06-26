@@ -24,10 +24,8 @@ export default function Home() {
     token: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
   });
 
-  // Test with specific address
-  const testAddress = '0x55a5705453ee82c742274154136fce8149597058';
-  const { history: ticketHistory, isLoading: historyLoading } = useTicketHistory(testAddress);
-  const { profile: userProfile, isLoading: profileLoading } = useUserProfile(testAddress);
+  const { history: ticketHistory, isLoading: historyLoading } = useTicketHistory(address);
+  const { profile: userProfile, isLoading: profileLoading } = useUserProfile(address);
 
   const animatePoints = (targetPoints: number) => {
     setIsAnimating(true);
@@ -283,8 +281,8 @@ export default function Home() {
             Buy tickets
           </Button>
 
-          {/* My Ticket History - Testing Mode */}
-          {(
+          {/* My Ticket History */}
+          {authenticated && (
             <Card 
               className="p-0 overflow-hidden"
               style={{ 
