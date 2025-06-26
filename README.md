@@ -119,7 +119,8 @@ Fork this repo and make it your own:
 ## 📦 Quick Start
 
 ```bash
-git clone https://github.com/megapot/demo.git megapot-demo
-cd megapot-demo
-npm install
-npm run dev
+git clone https://github.com/megapot-xyz/demo.git
+cd demo
+pnpm install
+pnpm dev
+```
