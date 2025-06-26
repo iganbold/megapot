@@ -3,11 +3,14 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { usePrivy } from '@privy-io/react-auth';
-import { useAccount, useBalance } from 'wagmi';
-import { useState } from 'react';
+import { useAccount, useBalance, useWriteContract, useWaitForTransactionReceipt, useReadContract } from 'wagmi';
+import { useState, useEffect } from 'react';
 import { ChevronDownIcon } from 'lucide-react';
 import { useTicketHistory } from '@/hooks/useTicketHistory';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import jackpotAbi from '@/lib/abi/jackpotAbi';
+import { config } from '@/lib/config';
+import { parseUnits } from 'viem';
 
 export default function Home() {
   const { login, logout, authenticated, user } = usePrivy();
@@ -18,6 +21,7 @@ export default function Home() {
   const [showAllHistory, setShowAllHistory] = useState(false);
   const [animatedPoints, setAnimatedPoints] = useState(10);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [purchaseStep, setPurchaseStep] = useState<'idle' | 'approving' | 'purchasing'>('idle');
 
   const { data: usdcBalance } = useBalance({
     address,
@@ -26,6 +30,49 @@ export default function Home() {
 
   const { history: ticketHistory, isLoading: historyLoading } = useTicketHistory(address);
   const { profile: userProfile, isLoading: profileLoading } = useUserProfile(address);
+
+  // Smart contract interaction
+  const { writeContract, data: hash, isPending: isPurchasing } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess: isPurchaseSuccess } = useWaitForTransactionReceipt({
+    hash,
+  });
+
+  // USDC contract address on Base
+  const USDC_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
+  const contractAddress = (config.megapotMainnetTestContractAddress || config.megapotProxyContractAddress) as `0x${string}`;
+
+  // Check current USDC allowance
+  const { data: currentAllowance } = useReadContract({
+    address: USDC_ADDRESS as `0x${string}`,
+    abi: [
+      {
+        "inputs": [
+          {"internalType": "address", "name": "owner", "type": "address"},
+          {"internalType": "address", "name": "spender", "type": "address"}
+        ],
+        "name": "allowance",
+        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+        "stateMutability": "view",
+        "type": "function"
+      }
+    ],
+    functionName: 'allowance',
+    args: [address || '0x0', contractAddress],
+    query: { enabled: !!address }
+  });
+
+  // Auto-progress to purchase step when approval is successful
+  useEffect(() => {
+    if (purchaseStep === 'approving' && isPurchaseSuccess) {
+      setTimeout(() => {
+        handlePurchaseTickets();
+      }, 1000); // Small delay for better UX
+    } else if (purchaseStep === 'purchasing' && isPurchaseSuccess) {
+      setTimeout(() => {
+        setPurchaseStep('idle');
+      }, 2000); // Reset after success
+    }
+  }, [isPurchaseSuccess, purchaseStep]);
 
   const animatePoints = (targetPoints: number) => {
     setIsAnimating(true);
@@ -59,6 +106,74 @@ export default function Home() {
       animatePoints(newCount * 10); // Triggers animation
       return newCount;
     });
+  };
+
+  const handlePurchaseTickets = async () => {
+    if (!address || !authenticated) {
+      login();
+      return;
+    }
+
+    try {
+      const ticketCost = parseUnits((ticketCount * 1.0).toString(), 6); // USDC has 6 decimals
+      
+      if (purchaseStep === 'idle') {
+        // Check if we have sufficient allowance
+        const allowance = currentAllowance || 0n;
+        
+        if (allowance >= ticketCost) {
+          // Skip approval, go directly to purchase
+          setPurchaseStep('purchasing');
+          writeContract({
+            address: contractAddress,
+            abi: jackpotAbi,
+            functionName: 'purchaseTickets',
+            args: [
+              '0x0000000000000000000000000000000000000000', // referrer (zero address for no referrer)
+              ticketCost, // value (total cost in USDC)
+              address, // recipient (buying for self)
+            ],
+          });
+        } else {
+          // Need approval first
+          setPurchaseStep('approving');
+          writeContract({
+            address: USDC_ADDRESS as `0x${string}`,
+            abi: [
+              {
+                "inputs": [
+                  {"internalType": "address", "name": "spender", "type": "address"},
+                  {"internalType": "uint256", "name": "amount", "type": "uint256"}
+                ],
+                "name": "approve",
+                "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
+                "stateMutability": "nonpayable",
+                "type": "function"
+              }
+            ],
+            functionName: 'approve',
+            args: [contractAddress, ticketCost],
+          });
+        }
+      } else if (purchaseStep === 'approving' && isPurchaseSuccess) {
+        // Step 2: Purchase tickets after approval is confirmed
+        setPurchaseStep('purchasing');
+        writeContract({
+          address: contractAddress,
+          abi: jackpotAbi,
+          functionName: 'purchaseTickets',
+          args: [
+            '0x0000000000000000000000000000000000000000', // referrer (zero address for no referrer)
+            ticketCost, // value (total cost in USDC)
+            address, // recipient (buying for self)
+          ],
+        });
+      }
+      
+    } catch (error) {
+      console.error('Error purchasing tickets:', error);
+      setPurchaseStep('idle');
+    }
   };
 
   return (
@@ -277,8 +392,15 @@ export default function Home() {
               padding: '1.75rem 2rem',
               borderRadius: '1.25rem'
             }}
+            onClick={handlePurchaseTickets}
+            disabled={isPurchasing || isConfirming || purchaseStep !== 'idle'}
           >
-            Buy tickets
+            {purchaseStep === 'approving' && isPurchasing ? 'Approve USDC...' : 
+             purchaseStep === 'approving' && isConfirming ? 'Confirming Approval...' : 
+             purchaseStep === 'purchasing' && isPurchasing ? 'Purchasing...' : 
+             purchaseStep === 'purchasing' && isConfirming ? 'Confirming Purchase...' : 
+             isPurchaseSuccess && purchaseStep === 'purchasing' ? '✅ Success!' : 
+             'Buy tickets'}
           </Button>
 
           {/* My Ticket History */}
