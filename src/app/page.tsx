@@ -294,8 +294,12 @@ export default function Home() {
             >
               <Button
                 onClick={() => setShowTicketHistory(!showTicketHistory)}
-                className="w-full bg-transparent border-none text-white font-medium p-6 flex items-center justify-between hover:bg-muted/50"
-                style={{ backgroundColor: 'transparent' }}
+                className="w-full bg-transparent border-none text-white font-medium flex items-center justify-between hover:bg-muted/50"
+                style={{ 
+                  backgroundColor: 'transparent',
+                  padding: '1.75rem 2rem',
+                  borderRadius: '1.25rem'
+                }}
               >
                 <span className="text-lg font-bold">My Ticket History</span>
                 <ChevronDownIcon 

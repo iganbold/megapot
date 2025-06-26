@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MegaPot Web3 App",
+  title: "Megapot",
   description: "A modern web3 application with Privy authentication",
 };
 
