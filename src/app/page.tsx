@@ -196,7 +196,20 @@ export default function Home() {
       <div className="max-w-[28rem] mx-auto min-h-screen" style={{ backgroundColor: '#0a0a0a' }}>
         {/* Header */}
         <div className="flex items-center justify-between p-6 pt-12">
-          <h1 className="text-2xl font-extrabold text-white">MEGAPOT</h1>
+          <div className="h-8">
+            <svg 
+              width="146" 
+              height="32" 
+              viewBox="0 0 731 162" 
+              fill="none" 
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-full w-auto"
+            >
+              <path d="M7.168 130.5V38.34H26.752L59.008 76.868L91.136 38.34H110.848V130.5H92.288V65.86L59.008 105.668L25.6 65.988V130.5H7.168ZM126.174 130.5V38.34H211.166V56.9H144.862V75.076H198.238V93.764H144.862V111.94H211.166V130.5H126.174ZM242.35 130.5C238.937 130.5 235.822 129.689 233.006 128.068C230.275 126.361 228.057 124.143 226.35 121.412C224.729 118.596 223.918 115.481 223.918 112.068V56.772C223.918 53.3587 224.729 50.2867 226.35 47.556C228.057 44.74 230.275 42.5213 233.006 40.9C235.822 39.1933 238.937 38.34 242.35 38.34H297.518C300.931 38.34 304.003 39.1933 306.734 40.9C309.55 42.5213 311.811 44.74 313.518 47.556C315.225 50.2867 316.078 53.3587 316.078 56.772V64.708H297.39V57.668C297.39 57.412 297.305 57.2413 297.134 57.156C297.049 56.9853 296.878 56.9 296.622 56.9H243.118C242.862 56.9 242.649 56.9853 242.478 57.156C242.393 57.2413 242.35 57.412 242.35 57.668V111.172C242.35 111.428 242.393 111.641 242.478 111.812C242.649 111.897 242.862 111.94 243.118 111.94H296.622C296.878 111.94 297.049 111.897 297.134 111.812C297.305 111.641 297.39 111.428 297.39 111.172V96.068H277.038V77.508H316.078V112.068C316.078 115.481 315.225 118.596 313.518 121.412C311.811 124.143 309.55 126.361 306.734 128.068C304.003 129.689 300.931 130.5 297.518 130.5H242.35ZM330.424 130.5V56.772C330.424 53.3587 331.235 50.2867 332.856 47.556C334.563 44.74 336.781 42.5213 339.512 40.9C342.328 39.1933 345.443 38.34 348.856 38.34H404.024C407.437 38.34 410.509 39.1933 413.24 40.9C416.056 42.5213 418.317 44.74 420.024 47.556C421.731 50.2867 422.584 53.3587 422.584 56.772V130.5H403.896V100.164H348.856V130.5H330.424ZM348.856 81.732H403.896V57.668C403.896 57.412 403.811 57.2413 403.64 57.156C403.555 56.9853 403.384 56.9 403.128 56.9H349.624C349.368 56.9 349.155 56.9853 348.984 57.156C348.899 57.2413 348.856 57.412 348.856 57.668V81.732Z" fill="#44b626"/>
+              <path d="M477.706 13H440.007V62.9132L452.246 62.8257L443.5 120.738C443.5 121.213 439.821 149.417 440.007 148.995L474.277 55.3881H466.255L466.203 36.8056H478.149C487.76 36.8056 495.552 45.279 495.552 55.7293C495.552 66.1807 491.065 74.653 481.454 74.653H478.981L469.754 98.5093L477.706 98.459C499.407 98.459 517 79.3285 517 55.7304C517 32.1324 499.407 13 477.706 13Z" fill="#44b626"/>
+              <path d="M552.344 130.5C548.931 130.5 545.816 129.689 543 128.068C540.269 126.361 538.051 124.143 536.344 121.412C534.723 118.596 533.912 115.481 533.912 112.068V56.772C533.912 53.3587 534.723 50.2867 536.344 47.556C538.051 44.74 540.269 42.5213 543 40.9C545.816 39.1933 548.931 38.34 552.344 38.34H607.64C610.968 38.34 613.997 39.1933 616.728 40.9C619.544 42.5213 621.805 44.74 623.512 47.556C625.219 50.2867 626.072 53.3587 626.072 56.772V112.068C626.072 115.481 625.219 118.596 623.512 121.412C621.805 124.143 619.544 126.361 616.728 128.068C613.997 129.689 610.968 130.5 607.64 130.5H552.344ZM553.112 111.94H606.616C606.872 111.94 607.043 111.897 607.128 111.812C607.299 111.641 607.384 111.428 607.384 111.172V57.668C607.384 57.412 607.299 57.2413 607.128 57.156C607.043 56.9853 606.872 56.9 606.616 56.9H553.112C552.856 56.9 552.643 56.9853 552.472 57.156C552.387 57.2413 552.344 57.412 552.344 57.668V111.172C552.344 111.428 552.387 111.641 552.472 111.812C552.643 111.897 552.856 111.94 553.112 111.94ZM672.424 130.5V56.9H635.56V38.34H727.72V56.9H690.984V130.5H672.424Z" fill="#44b626"/>
+            </svg>
+          </div>
           {!authenticated ? (
             <Button 
               onClick={login}
@@ -241,7 +254,7 @@ export default function Home() {
         <div className="px-6 space-y-6">
           {/* Jackpot Display */}
           <Card 
-            className="p-7"
+            className="p-6"
             style={{ 
               backgroundColor: '#1a1a1a', 
               borderRadius: '1.25rem',
@@ -250,10 +263,10 @@ export default function Home() {
             }}
           >
             <div className="text-center">
-              <p className="text-sm font-medium tracking-wide mb-2" style={{ color: '#a1a1aa' }}>
-                TODAY&apos;S JACKPOT
+              <p className="text-sm font-medium tracking-wide mb-3 uppercase" style={{ color: '#a1a1aa' }}>
+                Today&apos;s Jackpot
               </p>
-              <div className="text-6xl font-black text-white mb-2">
+              <div className="text-5xl md:text-6xl font-black text-white mb-3 leading-none">
                 $1,036,062
               </div>
               <p className="text-sm" style={{ color: '#a1a1aa' }}>
@@ -267,7 +280,7 @@ export default function Home() {
             <h2 className="text-2xl font-bold text-white">Buy tickets</h2>
             
             <Card 
-              className="p-7"
+              className="p-6"
               style={{ 
                 backgroundColor: '#1a1a1a', 
                 borderRadius: '1.25rem',
@@ -284,14 +297,14 @@ export default function Home() {
                     setTicketCount(newCount);
                     animatePoints(newCount * 10);
                   }}
-                  className="text-6xl font-black text-white bg-transparent border-none outline-none w-32 ticket-input"
+                  className="text-5xl md:text-6xl font-black text-white bg-transparent border-none outline-none w-28 md:w-32 ticket-input"
                   placeholder="1"
                   min="1"
                 />
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-shrink-0">
                   <Button 
                     onClick={() => adjustTicketCount(1)}
-                    className="px-4 py-2 text-sm hover:bg-opacity-80 focus:ring-0 focus:outline-none"
+                    className="px-3 py-2 text-sm hover:bg-opacity-80 focus:ring-0 focus:outline-none"
                     style={{
                       backgroundColor: '#2a2a2a',
                       color: '#ffffff',
@@ -304,7 +317,7 @@ export default function Home() {
                   </Button>
                   <Button 
                     onClick={() => adjustTicketCount(10)}
-                    className="px-4 py-2 text-sm hover:bg-opacity-80 focus:ring-0 focus:outline-none"
+                    className="px-3 py-2 text-sm hover:bg-opacity-80 focus:ring-0 focus:outline-none"
                     style={{
                       backgroundColor: '#2a2a2a',
                       color: '#ffffff',
@@ -317,7 +330,7 @@ export default function Home() {
                   </Button>
                   <Button 
                     onClick={() => adjustTicketCount(100)}
-                    className="px-4 py-2 text-sm hover:bg-opacity-80 focus:ring-0 focus:outline-none"
+                    className="px-3 py-2 text-sm hover:bg-opacity-80 focus:ring-0 focus:outline-none"
                     style={{
                       backgroundColor: '#2a2a2a',
                       color: '#ffffff',
@@ -331,15 +344,24 @@ export default function Home() {
                 </div>
               </div>
               
-              <p className="text-sm" style={{ color: '#a1a1aa' }}>
-                Balance: {usdcBalance ? `${parseFloat(usdcBalance.formatted).toFixed(2)}` : '0.00'} USDC
-              </p>
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-medium text-white mb-1">Price</p>
+                  <p className="text-lg font-bold text-white">$1 <span className="text-sm font-normal" style={{ color: '#a1a1aa' }}>per ticket</span></p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm mb-1" style={{ color: '#a1a1aa' }}>Balance</p>
+                  <p className="text-sm font-medium text-white">
+                    {usdcBalance ? `${parseFloat(usdcBalance.formatted).toFixed(2)}` : '0.00'} USDC
+                  </p>
+                </div>
+              </div>
             </Card>
           </div>
 
           {/* Megapoints Section */}
           <Card 
-            className="p-7"
+            className="p-5"
             style={{ 
               backgroundColor: '#1a1a1a', 
               borderRadius: '1.25rem',
@@ -348,35 +370,37 @@ export default function Home() {
               background: 'linear-gradient(to right, rgba(68, 182, 38, 0.1), rgba(116, 192, 252, 0.1))'
             }}
           >
-            <div className="flex items-center justify-center gap-4 mb-6">
+            <div className="flex items-center justify-start gap-3 mb-4">
               <img 
                 src="/point.png"
                 alt="Points"
-                className={`w-12 h-12 transition-transform duration-200 ${
+                className={`w-10 h-10 flex-shrink-0 transition-transform duration-200 ${
                   isAnimating ? 'animate-bounce' : ''
                 }`}
               />
-              <div className="text-left">
-                <h3 className="font-bold text-lg mb-1" style={{ color: '#44b626' }}>Earn Megapoints!</h3>
-                <p className="text-white text-sm">10 points per ticket</p>
+              <div className="flex-1">
+                <h3 className="font-bold text-base mb-0.5 leading-tight" style={{ color: '#44b626' }}>
+                  Earn Megapoints!
+                </h3>
+                <p className="text-white text-xs leading-tight opacity-90">10 points per ticket</p>
               </div>
             </div>
             
             <div 
-              className="p-4 rounded-xl mb-4"
+              className="p-3 rounded-lg mb-4"
               style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}
             >
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-white text-sm">Your tickets:</span>
-                <span className="text-white font-bold text-2xl">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-white text-xs">Your tickets:</span>
+                <span className="text-white font-bold text-xl">
                   {ticketCount}
                 </span>
               </div>
               
               <div className="flex items-center justify-between">
-                <span className="text-white text-sm">Points earned:</span>
+                <span className="text-white text-xs">Points earned:</span>
                 <span 
-                  className={`font-bold text-2xl transition-all duration-300 ${
+                  className={`font-bold text-xl transition-all duration-300 ${
                     isAnimating ? 'scale-125 animate-pulse' : ''
                   }`}
                   style={{ color: '#44b626' }}
@@ -387,11 +411,8 @@ export default function Home() {
             </div>
             
             <div className="text-center">
-              <div className="text-sm mb-2" style={{ color: '#a1a1aa' }}>
-                🎁 Redeem points for:
-              </div>
-              <div className="text-sm" style={{ color: '#a1a1aa' }}>
-                Free tickets • Bonus entries • Exclusive rewards
+              <div className="text-xs" style={{ color: '#a1a1aa' }}>
+                🎁 Redeem for free tickets • bonus entries • exclusive rewards
               </div>
             </div>
           </Card>
@@ -614,36 +635,135 @@ export default function Home() {
             </Card>
           )}
 
-          {/* Footer */}
-          <div className="text-center py-8">
-            <p className="text-xs mb-2" style={{ color: '#a1a1aa' }}>POWERED BY</p>
-            <p className="text-white font-bold text-lg">MEGAPOT</p>
-          </div>
+
 
           {/* FAQ Section */}
-          <div className="pb-8">
+          <Card 
+            className="p-0 overflow-hidden mb-8"
+            style={{ 
+              backgroundColor: '#1a1a1a', 
+              borderRadius: '1.25rem',
+              boxShadow: '0 4px 12px -2px rgba(0, 0, 0, 0.4), 0 8px 24px -4px rgba(0, 0, 0, 0.3)',
+              border: 'none'
+            }}
+          >
             <Button
               onClick={() => setShowFAQ(!showFAQ)}
-              className="w-full bg-transparent border-none text-white font-medium p-4 flex items-center justify-between hover:bg-muted/50 rounded-xl"
-              style={{ backgroundColor: 'transparent' }}
+              className="w-full bg-transparent border-none text-white font-medium flex items-center justify-between hover:bg-muted/50"
+              style={{ 
+                backgroundColor: 'transparent',
+                padding: '1.75rem 2rem',
+                borderRadius: '1.25rem'
+              }}
             >
-              <span>What is Megapot?</span>
+              <span className="text-lg font-bold">Frequently Asked Questions</span>
               <ChevronDownIcon 
                 className={`w-5 h-5 transition-transform ${showFAQ ? 'rotate-180' : ''}`} 
               />
             </Button>
             
             {showFAQ && (
-              <div 
-                className="mt-4 p-4 rounded-xl"
-                style={{ backgroundColor: 'rgba(42, 42, 42, 0.2)' }}
-              >
-                <p className="text-sm" style={{ color: '#a1a1aa' }}>
-                  Megapot is a decentralized lottery protocol that allows users to buy tickets and earn rewards through Megapoints. Each ticket purchase earns you points that can be redeemed for free tickets and exclusive rewards.
-                </p>
+              <div className="px-6 pb-6 space-y-6">
+                
+                {/* What is Megapot */}
+                <div>
+                  <h3 className="font-bold text-white mb-2">What is Megapot?</h3>
+                  <p className="text-sm" style={{ color: '#a1a1aa' }}>
+                    Megapot runs a daily jackpot online with a huge cash prize. Drawings are independently audited for security and anyone can confirm the results are fair.
+                  </p>
+                </div>
+                
+                <div className="h-px w-full" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }} />
+                
+                {/* Prizes and Odds */}
+                <div>
+                  <h3 className="font-bold text-white mb-2">What are the prizes and odds?</h3>
+                  <div className="text-sm space-y-2" style={{ color: '#a1a1aa' }}>
+                    <p>Our prizes include the $1,036,432.93 jackpot. Odds to win are 1 in 1,480,618, which are 197x better than the USA lottery (Powerball).</p>
+                    <p>Each ticket also has a chance to win 1 of 31 guaranteed daily prizes up to $25. Odds are based on how many players play.</p>
+                    <p>All prizes are in USDC, a regulated and fully-backed digital dollar.</p>
+                  </div>
+                </div>
+                
+                <div className="h-px w-full" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }} />
+                
+                {/* Fair Drawing */}
+                <div>
+                  <h3 className="font-bold text-white mb-2">How do I know the drawing is fair?</h3>
+                  <div className="text-sm space-y-2" style={{ color: '#a1a1aa' }}>
+                    <p>19 players have won the jackpot and over $60 million of jackpots have run since July 2024, all publicly verifiable on the blockchain.</p>
+                    <p>Our code uses an external random number generator and has been audited 4 times by top security firms.</p>
+                    <p>We have been featured in Forbes, a major US magazine. Our founder previously worked at Uniswap and Microsoft.</p>
+                  </div>
+                </div>
+                
+                <div className="h-px w-full" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }} />
+                
+                {/* Claim Winnings */}
+                <div>
+                  <h3 className="font-bold text-white mb-2">How do I claim my winnings?</h3>
+                  <p className="text-sm" style={{ color: '#a1a1aa' }}>
+                    Winnings can be withdrawn immediately. Since the code runs by itself on the blockchain, Megapot does not hold your tickets or your winnings at any time.
+                  </p>
+                </div>
+                
+                <div className="h-px w-full" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }} />
+                
+                {/* Different from lotteries */}
+                <div>
+                  <h3 className="font-bold text-white mb-2">How is this different from lotteries?</h3>
+                  <p className="text-sm" style={{ color: '#a1a1aa' }}>
+                    Megapot can be played online from most countries, has far better expected value than any traditional lottery, and 100% of ticket cost goes to the community.
+                  </p>
+                </div>
+                
+                <div className="h-px w-full" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }} />
+                
+                {/* Fees */}
+                <div>
+                  <h3 className="font-bold text-white mb-2">What fees are there?</h3>
+                  <div className="text-sm space-y-2" style={{ color: '#a1a1aa' }}>
+                    <p>100% of your ticket cost goes to the prize pool and the community. Megapot takes 0%.</p>
+                    <p>70% of the ticket cost is entered into the jackpot. 30% is paid to the community for building a mega jackpot and referring players.</p>
+                  </div>
+                </div>
+                
+                <div className="h-px w-full" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }} />
+                
+                {/* Megapoints */}
+                <div>
+                  <h3 className="font-bold text-white mb-2">What are Megapoints?</h3>
+                  <p className="text-sm" style={{ color: '#a1a1aa' }}>
+                    Megapoints are how we keep track of our earliest users. Play consecutive days and earn up to 2.5x Megapoints!
+                  </p>
+                </div>
+                
+                <div className="h-px w-full" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }} />
+                
+                {/* Big Jackpot */}
+                <div>
+                  <h3 className="font-bold text-white mb-2">How is this jackpot so big?</h3>
+                  <div className="text-sm space-y-2" style={{ color: '#a1a1aa' }}>
+                    <p>Liquidity providers (LPs) guarantee daily drawings with mega jackpots no matter how many tickets are bought by players.</p>
+                    <p>If a player wins, LPs pay the prize. Otherwise, the jackpot rolls over to the next day, growing by that day&apos;s entries minus fees paid to LPs.</p>
+                    <p>Become a LP and earn fees for taking on risk. More details in our docs.</p>
+                  </div>
+                </div>
+                
+                <div className="h-px w-full" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }} />
+                
+                {/* Security */}
+                <div>
+                  <h3 className="font-bold text-white mb-2">Secured by the Best</h3>
+                  <div className="text-sm space-y-2" style={{ color: '#a1a1aa' }}>
+                    <p>Our smart contract was audited 4 times by Cantina, a top security firm trusted by Coinbase and Uniswap, and CD Security, a Polygon Labs partner.</p>
+                    <p>Jackpot drawings are provably random through Pyth Entropy. Pyth secures over $7B in assets.</p>
+                  </div>
+                </div>
+                
               </div>
             )}
-          </div>
+          </Card>
         </div>
       </div>
 
