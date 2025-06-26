@@ -7,6 +7,7 @@ import { useAccount, useBalance } from 'wagmi';
 import { useState } from 'react';
 import { ChevronDownIcon } from 'lucide-react';
 import { useTicketHistory } from '@/hooks/useTicketHistory';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 export default function Home() {
   const { login, logout, authenticated, user } = usePrivy();
@@ -14,6 +15,7 @@ export default function Home() {
   const [ticketCount, setTicketCount] = useState(1);
   const [showFAQ, setShowFAQ] = useState(false);
   const [showTicketHistory, setShowTicketHistory] = useState(false);
+  const [showAllHistory, setShowAllHistory] = useState(false);
   const [animatedPoints, setAnimatedPoints] = useState(12);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -25,6 +27,7 @@ export default function Home() {
   // Test with specific address
   const testAddress = '0x55a5705453ee82c742274154136fce8149597058';
   const { history: ticketHistory, isLoading: historyLoading } = useTicketHistory(testAddress);
+  const { profile: userProfile, isLoading: profileLoading } = useUserProfile(testAddress);
 
   const animatePoints = (targetPoints: number) => {
     setIsAnimating(true);
@@ -304,22 +307,81 @@ export default function Home() {
               
               {showTicketHistory && (
                 <div className="px-6 pb-6">
-                  {historyLoading ? (
+                  {historyLoading || profileLoading ? (
                     <div className="text-center py-4" style={{ color: '#a1a1aa' }}>
                       Loading ticket history...
                     </div>
-                  ) : ticketHistory && ticketHistory.length > 0 ? (
+                  ) : userProfile && ticketHistory && ticketHistory.length > 0 ? (
+                    <div className="space-y-6">
+                      {/* Stats Header */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div 
+                          className="p-4 rounded-xl"
+                          style={{ backgroundColor: 'rgba(68, 182, 38, 0.1)' }}
+                        >
+                          <div className="text-sm" style={{ color: '#a1a1aa' }}>Total Tickets</div>
+                          <div className="text-xl font-bold text-white">
+                            {parseInt(userProfile.totalTicketsPurchased).toLocaleString()}
+                          </div>
+                          <div className="text-xs" style={{ color: '#44b626' }}>
+                            {userProfile.ticketPurchaseCount} transactions
+                          </div>
+                        </div>
+                        
+                        <div 
+                          className="p-4 rounded-xl"
+                          style={{ backgroundColor: 'rgba(255, 193, 7, 0.1)' }}
+                        >
+                          <div className="text-sm" style={{ color: '#a1a1aa' }}>Total Winnings</div>
+                          <div className="text-xl font-bold text-white">
+                            ${parseFloat(userProfile.totalWinnings || '0').toFixed(2)}
+                          </div>
+                          <div className="text-xs" style={{ color: '#ffc107' }}>
+                            {userProfile.winWithdrawalCount} withdrawals
+                          </div>
+                        </div>
+                        
+                        <div 
+                          className="p-4 rounded-xl"
+                          style={{ backgroundColor: 'rgba(116, 192, 252, 0.1)' }}
+                        >
+                          <div className="text-sm" style={{ color: '#a1a1aa' }}>Member Since</div>
+                          <div className="text-sm font-bold text-white">
+                            {new Date(parseInt(userProfile.firstActivityTime) * 1000).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric'
+                            })}
+                          </div>
+                          <div className="text-xs" style={{ color: '#74C0FC' }}>
+                            {userProfile.activityCount} activities
+                          </div>
+                        </div>
+                        
+                        <div 
+                          className="p-4 rounded-xl"
+                          style={{ backgroundColor: 'rgba(183, 148, 246, 0.1)' }}
+                        >
+                          <div className="text-sm" style={{ color: '#a1a1aa' }}>Total Spent</div>
+                          <div className="text-xl font-bold text-white">
+                            ${parseInt(userProfile.totalTicketsPurchased).toFixed(2)}
+                          </div>
+                          <div className="text-xs" style={{ color: '#B794F6' }}>
+                            $1.00 per ticket
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Transaction History */}
                     <div className="space-y-4">
-                      {ticketHistory.slice(0, 3).map((ticket, index) => {
+                      {ticketHistory
+                        .sort((a, b) => parseInt(b.blockTimestamp) - parseInt(a.blockTimestamp))
+                        .slice(0, showAllHistory ? ticketHistory.length : 10)
+                        .map((ticket, index) => {
                         const ticketDate = new Date(parseInt(ticket.blockTimestamp) * 1000);
-                        const ticketId = `TKT-${String(index + 1).padStart(3, '0')}`;
                         const ticketsCount = parseInt(ticket.ticketsPurchased);
                         const pointsEarned = ticketsCount * 12;
-                        
-                        // Mock data for demo - in real app you'd get this from the contract/subgraph
-                        const isWinning = index === 2; // Make the third ticket a winner
-                        const winAmount = isWinning ? 15.00 : 0;
-                        const status = index === 0 ? 'Active' : isWinning ? 'Won' : 'No Win';
+                        const usdcSpent = ticketsCount * 1.0; // $1 per ticket
                         
                         return (
                           <div key={ticket.id} className="space-y-3">
@@ -327,19 +389,17 @@ export default function Home() {
                               <div className="flex items-start gap-3">
                                 <div>
                                   <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-white font-bold">{ticketId}</span>
+                                    <span className="text-white font-bold">
+                                      {ticket.transactionHash.slice(0, 6)}...{ticket.transactionHash.slice(-4)}
+                                    </span>
                                     <span 
                                       className="px-2 py-1 rounded-full text-xs font-medium"
                                       style={{
-                                        backgroundColor: status === 'Active' ? 'rgba(68, 182, 38, 0.2)' : 
-                                                        status === 'Won' ? 'rgba(255, 193, 7, 0.2)' : 
-                                                        'rgba(156, 163, 175, 0.2)',
-                                        color: status === 'Active' ? '#44b626' : 
-                                               status === 'Won' ? '#ffc107' : 
-                                               '#9ca3af'
+                                        backgroundColor: 'rgba(68, 182, 38, 0.2)',
+                                        color: '#44b626'
                                       }}
                                     >
-                                      {status}
+                                      Completed
                                     </span>
                                   </div>
                                   <div className="text-sm" style={{ color: '#a1a1aa' }}>
@@ -356,20 +416,16 @@ export default function Home() {
                                 </div>
                               </div>
                               <div className="text-right">
-                                <div className="text-white font-bold">{ticketsCount} tickets</div>
+                                <div className="text-white font-bold">{ticketsCount} ticket{ticketsCount > 1 ? 's' : ''}</div>
                                 <div className="text-sm" style={{ color: '#a1a1aa' }}>
-                                  {(ticketsCount * 1.0).toFixed(2)} USDC
+                                  {usdcSpent.toFixed(2)} USDC
                                 </div>
                               </div>
                             </div>
                             
                             <div className="flex items-center justify-between">
                               <div className="text-sm" style={{ color: '#a1a1aa' }}>
-                                Draw: {ticketDate.toLocaleDateString('en-US', { 
-                                  month: 'numeric', 
-                                  day: 'numeric', 
-                                  year: 'numeric' 
-                                })}
+                                Block: #{ticket.blockNumber}
                               </div>
                               <div className="flex items-center gap-4">
                                 <div className="flex items-center gap-1">
@@ -378,15 +434,10 @@ export default function Home() {
                                     +{pointsEarned}
                                   </span>
                                 </div>
-                                {isWinning && (
-                                  <div className="text-sm font-bold" style={{ color: '#ffc107' }}>
-                                    Won {winAmount.toFixed(2)} USDC
-                                  </div>
-                                )}
                               </div>
                             </div>
                             
-                            {index < 2 && (
+                            {index < Math.min(ticketHistory.length - 1, showAllHistory ? ticketHistory.length - 1 : 9) && (
                               <div 
                                 className="h-px w-full"
                                 style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
@@ -396,9 +447,10 @@ export default function Home() {
                         );
                       })}
                       
-                      {ticketHistory.length > 3 && (
+                      {ticketHistory.length > 10 && (
                         <div className="pt-4">
                           <Button 
+                            onClick={() => setShowAllHistory(!showAllHistory)}
                             className="w-full text-sm font-medium py-3"
                             style={{ 
                               backgroundColor: 'transparent',
@@ -407,10 +459,11 @@ export default function Home() {
                               borderRadius: '0.75rem'
                             }}
                           >
-                            View All History
+                            {showAllHistory ? 'Show Less' : 'View All History'}
                           </Button>
                         </div>
                       )}
+                    </div>
                     </div>
                   ) : (
                     <div className="text-center py-8" style={{ color: '#a1a1aa' }}>
