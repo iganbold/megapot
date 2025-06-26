@@ -24,6 +24,7 @@ export default function Home() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [purchaseStep, setPurchaseStep] = useState<'idle' | 'approving' | 'purchasing'>('idle');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [referralAddress, setReferralAddress] = useState<string>('0x0000000000000000000000000000000000000000');
 
   const { data: usdcBalance } = useBalance({
     address,
@@ -62,6 +63,16 @@ export default function Home() {
     args: [address || '0x0', contractAddress],
     query: { enabled: !!address }
   });
+
+  // Extract referral address from URL on component mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const refParam = urlParams.get('ref');
+    if (refParam && refParam.match(/^0x[a-fA-F0-9]{40}$/)) {
+      // Valid Ethereum address format
+      setReferralAddress(refParam);
+    }
+  }, []);
 
   // Auto-progress to purchase step when approval is successful
   useEffect(() => {
@@ -132,7 +143,7 @@ export default function Home() {
             abi: jackpotAbi,
             functionName: 'purchaseTickets',
             args: [
-              '0x0000000000000000000000000000000000000000', // referrer (zero address for no referrer)
+              referralAddress, // referrer from URL params or zero address
               ticketCost, // value (total cost in USDC)
               address, // recipient (buying for self)
             ],
@@ -166,7 +177,7 @@ export default function Home() {
           abi: jackpotAbi,
           functionName: 'purchaseTickets',
           args: [
-            '0x0000000000000000000000000000000000000000', // referrer (zero address for no referrer)
+            referralAddress, // referrer from URL params or zero address
             ticketCost, // value (total cost in USDC)
             address, // recipient (buying for self)
           ],
