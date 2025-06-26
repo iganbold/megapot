@@ -16,7 +16,7 @@ export default function Home() {
   const [showFAQ, setShowFAQ] = useState(false);
   const [showTicketHistory, setShowTicketHistory] = useState(false);
   const [showAllHistory, setShowAllHistory] = useState(false);
-  const [animatedPoints, setAnimatedPoints] = useState(12);
+  const [animatedPoints, setAnimatedPoints] = useState(10);
   const [isAnimating, setIsAnimating] = useState(false);
 
   const { data: usdcBalance } = useBalance({
@@ -56,7 +56,7 @@ export default function Home() {
   const adjustTicketCount = (amount: number) => {
     setTicketCount((prev) => {
       const newCount = Math.max(1, prev + amount);
-      animatePoints(newCount * 12); // Triggers animation
+      animatePoints(newCount * 10); // Triggers animation
       return newCount;
     });
   };
@@ -153,7 +153,7 @@ export default function Home() {
                   onChange={(e) => {
                     const newCount = Math.max(1, parseInt(e.target.value) || 1);
                     setTicketCount(newCount);
-                    animatePoints(newCount * 12);
+                    animatePoints(newCount * 10);
                   }}
                   className="text-6xl font-black text-white bg-transparent border-none outline-none w-32 ticket-input"
                   placeholder="1"
@@ -229,7 +229,7 @@ export default function Home() {
               />
               <div className="text-left">
                 <h3 className="font-bold text-lg mb-1" style={{ color: '#44b626' }}>Earn Megapoints!</h3>
-                <p className="text-white text-sm">12 points per ticket</p>
+                <p className="text-white text-sm">10 points per ticket</p>
               </div>
             </div>
             
@@ -382,7 +382,7 @@ export default function Home() {
                         .map((ticket, index) => {
                         const ticketDate = new Date(parseInt(ticket.blockTimestamp) * 1000);
                         const ticketsCount = parseInt(ticket.ticketsPurchased);
-                        const pointsEarned = ticketsCount * 12;
+                        const pointsEarned = ticketsCount * 10;
                         const usdcSpent = ticketsCount * 1.0; // $1 per ticket
                         
                         return (
