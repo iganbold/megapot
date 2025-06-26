@@ -11,6 +11,7 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import jackpotAbi from '@/lib/abi/jackpotAbi';
 import { config } from '@/lib/config';
 import { parseUnits } from 'viem';
+import { PurchaseSuccessModal } from '@/components/purchase-success-modal';
 
 export default function Home() {
   const { login, logout, authenticated, user } = usePrivy();
@@ -22,6 +23,7 @@ export default function Home() {
   const [animatedPoints, setAnimatedPoints] = useState(10);
   const [isAnimating, setIsAnimating] = useState(false);
   const [purchaseStep, setPurchaseStep] = useState<'idle' | 'approving' | 'purchasing'>('idle');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const { data: usdcBalance } = useBalance({
     address,
@@ -67,11 +69,12 @@ export default function Home() {
       setTimeout(() => {
         handlePurchaseTickets();
       }, 1000); // Small delay for better UX
-    } else if (purchaseStep === 'purchasing' && isPurchaseSuccess) {
-      setTimeout(() => {
-        setPurchaseStep('idle');
-      }, 2000); // Reset after success
-    }
+         } else if (purchaseStep === 'purchasing' && isPurchaseSuccess) {
+       setTimeout(() => {
+         setPurchaseStep('idle');
+         setShowSuccessModal(true);
+       }, 1000); // Show success modal after purchase
+     }
   }, [isPurchaseSuccess, purchaseStep]);
 
   const animatePoints = (targetPoints: number) => {
@@ -632,6 +635,14 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* Purchase Success Modal */}
+      <PurchaseSuccessModal 
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        ticketCount={ticketCount}
+        transactionHash={hash}
+      />
     </div>
   );
 }
