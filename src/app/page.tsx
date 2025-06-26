@@ -1,325 +1,460 @@
 'use client';
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { usePrivy } from '@privy-io/react-auth';
-import { useAccount, useBalance, useChainId, useSwitchChain } from 'wagmi';
-import { base } from 'wagmi/chains';
-import { useUserProfile } from '@/hooks/useUserProfile';
-import { useTicketHistory } from '@/hooks/useTicketHistory';
+import { useAccount, useBalance } from 'wagmi';
 import { useState } from 'react';
-import JackpotStats from '@/components/jackpot-stats';
+import { ChevronDownIcon } from 'lucide-react';
+import { useTicketHistory } from '@/hooks/useTicketHistory';
 
 export default function Home() {
   const { login, logout, authenticated, user } = usePrivy();
-  const { address, isConnected } = useAccount();
-  const chainId = useChainId();
-  const { switchChain } = useSwitchChain();
-  
-  const [searchAddress, setSearchAddress] = useState('');
-  const [lookupAddress, setLookupAddress] = useState('');
-  
-  const { data: balance } = useBalance({
+  const { address } = useAccount();
+  const [ticketCount, setTicketCount] = useState(1);
+  const [showFAQ, setShowFAQ] = useState(false);
+  const [showTicketHistory, setShowTicketHistory] = useState(false);
+  const [animatedPoints, setAnimatedPoints] = useState(12);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  const { data: usdcBalance } = useBalance({
     address,
+    token: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
   });
 
-  const isOnBase = chainId === base.id;
+  // Test with specific address
+  const testAddress = '0x55a5705453ee82c742274154136fce8149597058';
+  const { history: ticketHistory, isLoading: historyLoading } = useTicketHistory(testAddress);
 
-  // Load current user's profile and history
-  const { profile: userProfile, isLoading: userProfileLoading } = useUserProfile(address);
-  const { history: userHistory, isLoading: userHistoryLoading } = useTicketHistory(address);
+  const animatePoints = (targetPoints: number) => {
+    setIsAnimating(true);
+    const startPoints = animatedPoints;
+    const duration = 800;
+    const startTime = Date.now();
 
-  // Load searched address profile and history
-  const { profile: searchProfile, isLoading: searchProfileLoading } = useUserProfile(lookupAddress);
-  const { history: searchHistory, isLoading: searchHistoryLoading } = useTicketHistory(lookupAddress);
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
 
-  const handleSearch = () => {
-    if (searchAddress.trim()) {
-      setLookupAddress(searchAddress.toLowerCase());
-    }
+      // Easing function for smooth animation
+      const easeOut = 1 - Math.pow(1 - progress, 3);
+      const currentPoints = Math.round(startPoints + (targetPoints - startPoints) * easeOut);
+
+      setAnimatedPoints(currentPoints);
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        setIsAnimating(false);
+      }
+    };
+
+    requestAnimationFrame(animate);
   };
 
-  const clearSearch = () => {
-    setSearchAddress('');
-    setLookupAddress('');
+  const adjustTicketCount = (amount: number) => {
+    setTicketCount((prev) => {
+      const newCount = Math.max(1, prev + amount);
+      animatePoints(newCount * 12); // Triggers animation
+      return newCount;
+    });
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-6 p-8">
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold">MegaPot Web3</h1>
-        <p className="text-muted-foreground">
-          Connect your wallet to get started on Base
-        </p>
-        <div className="flex items-center justify-center gap-2">
-          <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-          <span className="text-sm font-medium">Base Mainnet Only</span>
-        </div>
-      </div>
-
-      {/* Jackpot Stats Card */}
-      <JackpotStats />
-
-      <div className="flex flex-col items-center gap-4">
-        {!authenticated ? (
-          <Button onClick={login} size="lg">
-            Connect Wallet
-          </Button>
-        ) : (
-          <div className="flex flex-col items-center gap-4">
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground">Connected as:</p>
-              <p className="font-mono text-sm">
-                {user?.wallet?.address || user?.email?.address}
-              </p>
-            </div>
-            <Button onClick={logout} variant="outline">
-              Disconnect
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {/* Address Search */}
-      <div className="w-full max-w-md space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">🔍 Search MegaPot Profile</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="Enter wallet address (0x...)"
-                value={searchAddress}
-                onChange={(e) => setSearchAddress(e.target.value)}
-                className="flex-1 px-3 py-2 border rounded-md text-sm"
-              />
-              <Button onClick={handleSearch} size="sm">
-                Search
-              </Button>
-            </div>
-            {lookupAddress && (
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">
-                  Searching: {lookupAddress.slice(0, 8)}...{lookupAddress.slice(-6)}
-                </span>
-                <Button onClick={clearSearch} variant="outline" size="sm">
-                  Clear
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {authenticated && isConnected && (
-        <div className="mt-8 space-y-4 max-w-4xl w-full">
-          {/* Network Status */}
-          {!isOnBase && (
-            <div className="p-4 border border-destructive rounded-lg bg-destructive/5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-semibold text-destructive">Wrong Network</h3>
-                  <p className="text-sm text-muted-foreground">Please switch to Base</p>
-                </div>
-                <Button 
-                  size="sm"
-                  onClick={() => switchChain({ chainId: base.id })}
-                >
-                  Switch to Base
-                </Button>
-              </div>
-            </div>
-          )}
-
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Current User Profile */}
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold">Your Profile</h2>
-              
-              {/* Wallet Info */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">💳 Wallet Info</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="text-sm space-y-1">
-                    <p><span className="font-medium">Address:</span> {address}</p>
-                    <p><span className="font-medium">Network:</span> {isOnBase ? 'Base Mainnet' : `Chain ${chainId}`}</p>
-                    {balance && isOnBase && (
-                      <p><span className="font-medium">Balance:</span> {parseFloat(balance.formatted).toFixed(4)} ETH</p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* User MegaPot Profile */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    🎟️ Your MegaPot Stats
-                    {userProfileLoading && <Badge variant="outline">Loading...</Badge>}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {userProfile ? (
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <div className="text-lg font-bold">{userProfile.totalTicketsPurchased}</div>
-                        <div className="text-xs text-muted-foreground">Total Tickets</div>
-                      </div>
-                      <div>
-                        <div className="text-lg font-bold">{userProfile.totalWinnings}</div>
-                        <div className="text-xs text-muted-foreground">Total Winnings</div>
-                      </div>
-                      <div>
-                        <div className="text-lg font-bold">{userProfile.ticketPurchaseCount}</div>
-                        <div className="text-xs text-muted-foreground">Purchases</div>
-                      </div>
-                      <div>
-                        <div className="text-lg font-bold">{userProfile.winWithdrawalCount}</div>
-                        <div className="text-xs text-muted-foreground">Withdrawals</div>
-                      </div>
-                    </div>
-                  ) : userProfileLoading ? (
-                    <div className="text-center py-4 text-muted-foreground">Loading profile...</div>
-                  ) : (
-                    <div className="text-center py-4 text-muted-foreground">No MegaPot activity found</div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Recent Tickets */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    🎫 Recent Tickets
-                    {userHistoryLoading && <Badge variant="outline">Loading...</Badge>}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {userHistory && userHistory.length > 0 ? (
-                    <div className="space-y-2">
-                      {userHistory.slice(0, 3).map((ticket) => (
-                        <div key={ticket.id} className="flex justify-between items-center p-2 border rounded">
-                          <div>
-                            <div className="font-medium">{ticket.ticketsPurchased} tickets</div>
-                            <div className="text-xs text-muted-foreground">
-                              {new Date(parseInt(ticket.blockTimestamp) * 1000).toLocaleDateString()}
-                            </div>
-                          </div>
-                          <div className="text-xs font-mono">
-                            {ticket.transactionHash.slice(0, 8)}...
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : userHistoryLoading ? (
-                    <div className="text-center py-4 text-muted-foreground">Loading history...</div>
-                  ) : (
-                    <div className="text-center py-4 text-muted-foreground">No ticket purchases found</div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Searched Address Profile */}
-            {lookupAddress && (
-              <div className="space-y-4">
-                <h2 className="text-xl font-semibold">Search Results</h2>
-                
-                {/* Searched Profile */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      🔍 Profile: {lookupAddress.slice(0, 8)}...
-                      {searchProfileLoading && <Badge variant="outline">Loading...</Badge>}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {searchProfile ? (
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <div className="text-lg font-bold">{searchProfile.totalTicketsPurchased}</div>
-                          <div className="text-xs text-muted-foreground">Total Tickets</div>
-                        </div>
-                        <div>
-                          <div className="text-lg font-bold">{searchProfile.totalWinnings}</div>
-                          <div className="text-xs text-muted-foreground">Total Winnings</div>
-                        </div>
-                        <div>
-                          <div className="text-lg font-bold">{searchProfile.ticketPurchaseCount}</div>
-                          <div className="text-xs text-muted-foreground">Purchases</div>
-                        </div>
-                        <div>
-                          <div className="text-lg font-bold">{searchProfile.winWithdrawalCount}</div>
-                          <div className="text-xs text-muted-foreground">Withdrawals</div>
-                        </div>
-                        {searchProfile.isLiquidityProvider && (
-                          <div className="col-span-2">
-                            <Badge>💧 Liquidity Provider</Badge>
-                          </div>
-                        )}
-                      </div>
-                    ) : searchProfileLoading ? (
-                      <div className="text-center py-4 text-muted-foreground">Loading profile...</div>
-                    ) : (
-                      <div className="text-center py-4 text-muted-foreground">No MegaPot activity found</div>
-                    )}
-                  </CardContent>
-                </Card>
-
-                {/* Searched History */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      🎫 Recent Activity
-                      {searchHistoryLoading && <Badge variant="outline">Loading...</Badge>}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {searchHistory && searchHistory.length > 0 ? (
-                      <div className="space-y-2">
-                        {searchHistory.slice(0, 5).map((ticket) => (
-                          <div key={ticket.id} className="flex justify-between items-center p-2 border rounded">
-                            <div>
-                              <div className="font-medium">{ticket.ticketsPurchased} tickets</div>
-                              <div className="text-xs text-muted-foreground">
-                                {new Date(parseInt(ticket.blockTimestamp) * 1000).toLocaleDateString()}
-                              </div>
-                            </div>
-                            <div className="text-xs font-mono">
-                              {ticket.transactionHash.slice(0, 8)}...
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : searchHistoryLoading ? (
-                      <div className="text-center py-4 text-muted-foreground">Loading history...</div>
-                    ) : (
-                      <div className="text-center py-4 text-muted-foreground">No ticket purchases found</div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {authenticated && !isConnected && (
-        <div className="mt-8 p-6 border rounded-lg space-y-2 max-w-md">
-          <h3 className="font-semibold">Email Account:</h3>
-          <div className="text-sm space-y-1">
-            <p>You&apos;re signed in with email. To use web3 features, connect a wallet.</p>
-            <Button onClick={login} size="sm" className="mt-2">
+    <div className="min-h-screen" style={{ backgroundColor: '#0a0a0a', color: '#ffffff' }}>
+      {/* Mobile Container */}
+      <div className="max-w-[28rem] mx-auto min-h-screen" style={{ backgroundColor: '#0a0a0a' }}>
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 pt-12">
+          <h1 className="text-2xl font-extrabold text-white">MEGAPOT</h1>
+          {!authenticated ? (
+            <Button 
+              onClick={login}
+              className="text-sm hover:scale-105 transition-transform"
+              style={{ 
+                backgroundColor: '#44b626', 
+                color: '#000000', 
+                fontWeight: 'bold',
+                padding: '0.5rem 1.5rem',
+                borderRadius: '0.75rem'
+              }}
+            >
               Connect Wallet
             </Button>
+          ) : (
+            <Button 
+              onClick={logout}
+              className="text-sm hover:bg-opacity-80 focus:ring-0 focus:outline-none flex items-center gap-2"
+              style={{
+                backgroundColor: 'rgba(42, 42, 42, 0.8)',
+                color: '#ffffff',
+                border: '1px solid rgba(68, 182, 38, 0.3)',
+                borderRadius: '1.5rem',
+                boxShadow: 'none',
+                fontWeight: 'normal',
+                padding: '0.5rem 1rem'
+              }}
+            >
+              <div 
+                className="w-2 h-2 rounded-full"
+                style={{ backgroundColor: '#44b626' }}
+              ></div>
+              {user?.wallet?.address ? 
+                `${user.wallet.address.slice(0, 6)}...${user.wallet.address.slice(-4)}` :
+                user?.email?.address || 'Connected'
+              }
+            </Button>
+          )}
+        </div>
+
+        {/* Main Content */}
+        <div className="px-6 space-y-6">
+          {/* Jackpot Display */}
+          <Card 
+            className="p-7"
+            style={{ 
+              backgroundColor: '#1a1a1a', 
+              borderRadius: '1.25rem',
+              boxShadow: '0 4px 12px -2px rgba(0, 0, 0, 0.4), 0 8px 24px -4px rgba(0, 0, 0, 0.3)',
+              border: 'none'
+            }}
+          >
+            <div className="text-center">
+              <p className="text-sm font-medium tracking-wide mb-2" style={{ color: '#a1a1aa' }}>
+                TODAY&apos;S JACKPOT
+              </p>
+              <div className="text-6xl font-black text-white mb-2">
+                $1,036,062
+              </div>
+              <p className="text-sm" style={{ color: '#a1a1aa' }}>
+                Drawing tomorrow at 11:01 AM
+              </p>
+            </div>
+          </Card>
+
+          {/* Buy Tickets Section */}
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold text-white">Buy tickets</h2>
+            
+            <Card 
+              className="p-7"
+              style={{ 
+                backgroundColor: '#1a1a1a', 
+                borderRadius: '1.25rem',
+                boxShadow: '0 4px 12px -2px rgba(0, 0, 0, 0.4), 0 8px 24px -4px rgba(0, 0, 0, 0.3)',
+                border: 'none'
+              }}
+            >
+              <div className="flex items-center justify-between mb-6">
+                <input
+                  type="number"
+                  value={ticketCount}
+                  onChange={(e) => {
+                    const newCount = Math.max(1, parseInt(e.target.value) || 1);
+                    setTicketCount(newCount);
+                    animatePoints(newCount * 12);
+                  }}
+                  className="text-6xl font-black text-white bg-transparent border-none outline-none w-32 ticket-input"
+                  placeholder="1"
+                  min="1"
+                />
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={() => adjustTicketCount(1)}
+                    className="px-4 py-2 text-sm hover:bg-opacity-80 focus:ring-0 focus:outline-none"
+                    style={{
+                      backgroundColor: '#2a2a2a',
+                      color: '#ffffff',
+                      border: '1px solid #2a2a2a',
+                      borderRadius: '0.75rem',
+                      boxShadow: 'none'
+                    }}
+                  >
+                    +1
+                  </Button>
+                  <Button 
+                    onClick={() => adjustTicketCount(10)}
+                    className="px-4 py-2 text-sm hover:bg-opacity-80 focus:ring-0 focus:outline-none"
+                    style={{
+                      backgroundColor: '#2a2a2a',
+                      color: '#ffffff',
+                      border: '1px solid #2a2a2a',
+                      borderRadius: '0.75rem',
+                      boxShadow: 'none'
+                    }}
+                  >
+                    +10
+                  </Button>
+                  <Button 
+                    onClick={() => adjustTicketCount(100)}
+                    className="px-4 py-2 text-sm hover:bg-opacity-80 focus:ring-0 focus:outline-none"
+                    style={{
+                      backgroundColor: '#2a2a2a',
+                      color: '#ffffff',
+                      border: '1px solid #2a2a2a',
+                      borderRadius: '0.75rem',
+                      boxShadow: 'none'
+                    }}
+                  >
+                    +100
+                  </Button>
+                </div>
+              </div>
+              
+              <p className="text-sm" style={{ color: '#a1a1aa' }}>
+                Balance: {usdcBalance ? `${parseFloat(usdcBalance.formatted).toFixed(2)}` : '0.00'} USDC
+              </p>
+            </Card>
+          </div>
+
+          {/* Megapoints Section */}
+          <Card 
+            className="p-7"
+            style={{ 
+              backgroundColor: '#1a1a1a', 
+              borderRadius: '1.25rem',
+              boxShadow: '0 4px 12px -2px rgba(0, 0, 0, 0.4), 0 8px 24px -4px rgba(0, 0, 0, 0.3)',
+              border: '1px solid rgba(68, 182, 38, 0.2)',
+              background: 'linear-gradient(to right, rgba(68, 182, 38, 0.1), rgba(116, 192, 252, 0.1))'
+            }}
+          >
+            <div className="flex items-center justify-center gap-4 mb-6">
+              <img 
+                src="/point.png"
+                alt="Points"
+                className={`w-12 h-12 transition-transform duration-200 ${
+                  isAnimating ? 'animate-bounce' : ''
+                }`}
+              />
+              <div className="text-left">
+                <h3 className="font-bold text-lg mb-1" style={{ color: '#44b626' }}>Earn Megapoints!</h3>
+                <p className="text-white text-sm">12 points per ticket</p>
+              </div>
+            </div>
+            
+            <div 
+              className="p-4 rounded-xl mb-4"
+              style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-white text-sm">Your tickets:</span>
+                <span className="text-white font-bold text-2xl">
+                  {ticketCount}
+                </span>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <span className="text-white text-sm">Points earned:</span>
+                <span 
+                  className={`font-bold text-2xl transition-all duration-300 ${
+                    isAnimating ? 'scale-125 animate-pulse' : ''
+                  }`}
+                  style={{ color: '#44b626' }}
+                >
+                  +{animatedPoints}
+                </span>
+              </div>
+            </div>
+            
+            <div className="text-center">
+              <div className="text-sm mb-2" style={{ color: '#a1a1aa' }}>
+                🎁 Redeem points for:
+              </div>
+              <div className="text-sm" style={{ color: '#a1a1aa' }}>
+                Free tickets • Bonus entries • Exclusive rewards
+              </div>
+            </div>
+          </Card>
+
+
+
+          {/* Buy Button */}
+          <Button 
+            variant="primary"
+            className="w-full text-lg"
+            style={{ 
+              padding: '1.75rem 2rem',
+              borderRadius: '1.25rem'
+            }}
+          >
+            Buy tickets
+          </Button>
+
+          {/* My Ticket History - Testing Mode */}
+          {(
+            <Card 
+              className="p-0 overflow-hidden"
+              style={{ 
+                backgroundColor: '#1a1a1a', 
+                borderRadius: '1.25rem',
+                boxShadow: '0 4px 12px -2px rgba(0, 0, 0, 0.4), 0 8px 24px -4px rgba(0, 0, 0, 0.3)',
+                border: 'none'
+              }}
+            >
+              <Button
+                onClick={() => setShowTicketHistory(!showTicketHistory)}
+                className="w-full bg-transparent border-none text-white font-medium p-6 flex items-center justify-between hover:bg-muted/50"
+                style={{ backgroundColor: 'transparent' }}
+              >
+                <span className="text-lg font-bold">My Ticket History</span>
+                <ChevronDownIcon 
+                  className={`w-5 h-5 transition-transform ${showTicketHistory ? 'rotate-180' : ''}`} 
+                />
+              </Button>
+              
+              {showTicketHistory && (
+                <div className="px-6 pb-6">
+                  {historyLoading ? (
+                    <div className="text-center py-4" style={{ color: '#a1a1aa' }}>
+                      Loading ticket history...
+                    </div>
+                  ) : ticketHistory && ticketHistory.length > 0 ? (
+                    <div className="space-y-4">
+                      {ticketHistory.slice(0, 3).map((ticket, index) => {
+                        const ticketDate = new Date(parseInt(ticket.blockTimestamp) * 1000);
+                        const ticketId = `TKT-${String(index + 1).padStart(3, '0')}`;
+                        const ticketsCount = parseInt(ticket.ticketsPurchased);
+                        const pointsEarned = ticketsCount * 12;
+                        
+                        // Mock data for demo - in real app you'd get this from the contract/subgraph
+                        const isWinning = index === 2; // Make the third ticket a winner
+                        const winAmount = isWinning ? 15.00 : 0;
+                        const status = index === 0 ? 'Active' : isWinning ? 'Won' : 'No Win';
+                        
+                        return (
+                          <div key={ticket.id} className="space-y-3">
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-start gap-3">
+                                <div>
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-white font-bold">{ticketId}</span>
+                                    <span 
+                                      className="px-2 py-1 rounded-full text-xs font-medium"
+                                      style={{
+                                        backgroundColor: status === 'Active' ? 'rgba(68, 182, 38, 0.2)' : 
+                                                        status === 'Won' ? 'rgba(255, 193, 7, 0.2)' : 
+                                                        'rgba(156, 163, 175, 0.2)',
+                                        color: status === 'Active' ? '#44b626' : 
+                                               status === 'Won' ? '#ffc107' : 
+                                               '#9ca3af'
+                                      }}
+                                    >
+                                      {status}
+                                    </span>
+                                  </div>
+                                  <div className="text-sm" style={{ color: '#a1a1aa' }}>
+                                    {ticketDate.toLocaleDateString('en-US', { 
+                                      year: 'numeric', 
+                                      month: '2-digit', 
+                                      day: '2-digit' 
+                                    })} at {ticketDate.toLocaleTimeString('en-US', { 
+                                      hour: 'numeric', 
+                                      minute: '2-digit', 
+                                      hour12: true 
+                                    })}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-white font-bold">{ticketsCount} tickets</div>
+                                <div className="text-sm" style={{ color: '#a1a1aa' }}>
+                                  {(ticketsCount * 1.0).toFixed(2)} USDC
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center justify-between">
+                              <div className="text-sm" style={{ color: '#a1a1aa' }}>
+                                Draw: {ticketDate.toLocaleDateString('en-US', { 
+                                  month: 'numeric', 
+                                  day: 'numeric', 
+                                  year: 'numeric' 
+                                })}
+                              </div>
+                              <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-1">
+                                  <img src="/point.png" alt="Points" className="w-4 h-4" />
+                                  <span className="text-sm font-medium" style={{ color: '#44b626' }}>
+                                    +{pointsEarned}
+                                  </span>
+                                </div>
+                                {isWinning && (
+                                  <div className="text-sm font-bold" style={{ color: '#ffc107' }}>
+                                    Won {winAmount.toFixed(2)} USDC
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            
+                            {index < 2 && (
+                              <div 
+                                className="h-px w-full"
+                                style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
+                              />
+                            )}
+                          </div>
+                        );
+                      })}
+                      
+                      {ticketHistory.length > 3 && (
+                        <div className="pt-4">
+                          <Button 
+                            className="w-full text-sm font-medium py-3"
+                            style={{ 
+                              backgroundColor: 'transparent',
+                              color: '#44b626',
+                              border: '1px solid rgba(68, 182, 38, 0.3)',
+                              borderRadius: '0.75rem'
+                            }}
+                          >
+                            View All History
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8" style={{ color: '#a1a1aa' }}>
+                      <div className="text-lg mb-2">No ticket history yet</div>
+                      <div className="text-sm">Purchase your first tickets to see them here!</div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </Card>
+          )}
+
+          {/* Footer */}
+          <div className="text-center py-8">
+            <p className="text-xs mb-2" style={{ color: '#a1a1aa' }}>POWERED BY</p>
+            <p className="text-white font-bold text-lg">MEGAPOT</p>
+          </div>
+
+          {/* FAQ Section */}
+          <div className="pb-8">
+            <Button
+              onClick={() => setShowFAQ(!showFAQ)}
+              className="w-full bg-transparent border-none text-white font-medium p-4 flex items-center justify-between hover:bg-muted/50 rounded-xl"
+              style={{ backgroundColor: 'transparent' }}
+            >
+              <span>What is Megapot?</span>
+              <ChevronDownIcon 
+                className={`w-5 h-5 transition-transform ${showFAQ ? 'rotate-180' : ''}`} 
+              />
+            </Button>
+            
+            {showFAQ && (
+              <div 
+                className="mt-4 p-4 rounded-xl"
+                style={{ backgroundColor: 'rgba(42, 42, 42, 0.2)' }}
+              >
+                <p className="text-sm" style={{ color: '#a1a1aa' }}>
+                  Megapot is a decentralized lottery protocol that allows users to buy tickets and earn rewards through Megapoints. Each ticket purchase earns you points that can be redeemed for free tickets and exclusive rewards.
+                </p>
+              </div>
+            )}
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
