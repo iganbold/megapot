@@ -40,3 +40,4 @@ git clone https://github.com/megapot-xyz/demo.git
 cd demo
 pnpm install
 pnpm dev
+
